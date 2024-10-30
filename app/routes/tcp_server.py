@@ -1,6 +1,8 @@
 import asyncio
 from asyncio import StreamReader, StreamWriter
 
+from app.services.organize import Organize
+from app.utils.parse_input import ParseInput
 from app.utils.send_discord_message import SendDiscordMessage
 
 tcp_data: list[str] = []
@@ -15,12 +17,26 @@ async def handle_tcp_connection(reader: StreamReader, writer: StreamWriter) -> N
         if not data:
             print(f"Connection from {addr} closed.")
             break
-        
-        message: str = data.decode()
-        tcp_data.append(message)
-        print(f"Received from {addr}: {message}")
 
-        writer.write(data)  
+        message: str = data.decode().strip()
+        print(f"Received from {addr}: {message}")
+        
+        numbers = ParseInput().parse_input(message)
+
+        if numbers is None:
+            error_message = f"Invalid data format from {addr}: {message}"
+            print(error_message)
+            
+            discord_sender = SendDiscordMessage()
+            discord_sender.sendMessage(message=message, err="Invalid format for input numbers.")
+            continue  
+
+        ordered_list = Organize().bubble_sort(numbers)
+        
+        ordered_string = ', '.join(map(str, ordered_list))
+        ordered_data = ordered_string.encode()
+
+        writer.write(ordered_data)
         await writer.drain()
     
     writer.close()
@@ -37,4 +53,6 @@ async def start_tcp_server() -> None:
             await server.serve_forever()
         except Exception as e:
             print(f"Error occurred: {e}")
-            SendDiscordMessage().sendMessage(message="Error occurred", err=e)
+            discord_sender = SendDiscordMessage()
+            discord_sender.sendMessage(message="Error occurred in the TCP server", err=str(e))
+
