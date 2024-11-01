@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.routes.tcp_server import tcp_data
+from app.server.tcp_server import tcp_data
 
 router = APIRouter()
 

@@ -26,12 +26,18 @@ async def handle_tcp_connection(reader: StreamReader, writer: StreamWriter) -> N
         if numbers is None:
             error_message = f"Invalid data format from {addr}: {message}"
             print(error_message)
-            
-            discord_sender = SendDiscordMessage()
-            discord_sender.sendMessage(message=message, err="Invalid format for input numbers.")
+            writer.write(b"Error: Invalid format for input numbers.")
+            await writer.drain()
             continue  
 
-        ordered_list = Organize().bubble_sort(numbers)
+        try:
+            ordered_list = Organize().bubble_sort(numbers)
+        except Exception as e:
+            error_message = f"Error processing numbers from {addr}: {str(e)}"
+            print(error_message)
+            writer.write(b"Error: Failed to process numbers.")
+            await writer.drain()
+            continue
         
         ordered_string = ', '.join(map(str, ordered_list))
         ordered_data = ordered_string.encode()
@@ -42,6 +48,7 @@ async def handle_tcp_connection(reader: StreamReader, writer: StreamWriter) -> N
     writer.close()
     await writer.wait_closed()
     print(f"Closed connection from {addr}.")
+
 
 async def start_tcp_server() -> None:
     """Inicializa o servidor TCP."""

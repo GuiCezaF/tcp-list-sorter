@@ -2,7 +2,7 @@ import asyncio
 from fastapi import FastAPI
 from app.routes import home
 from app.routes.tcp_data_router import router as tcp_data_router
-from app.routes.tcp_server import start_tcp_server
+from app.server.tcp_server import start_tcp_server
 
 app = FastAPI()
 
