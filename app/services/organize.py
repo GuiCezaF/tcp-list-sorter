@@ -1,10 +1,21 @@
-from typing import Optional
-
+from typing import List
 from app.utils.send_discord_message import SendDiscordMessage
 
 class Organize:
+    def bubble_sort(self, numbers: List[float]) -> List[float]:
+        """
+        Ordena uma lista de números utilizando o algoritmo de bubble sort.
 
-    def bubble_sort(self, numbers: list[float]) -> Optional[list[float]]:
+        Args:
+            numbers (List[float]): Lista de números a ser ordenada.
+
+        Returns:
+            List[float]: Lista de números ordenada em ordem crescente.
+        """
+        
+        if not all(isinstance(x, (int, float)) for x in numbers):
+            raise ValueError("A lista deve conter apenas valores numéricos.")
+        
         length = len(numbers)
 
         if length <= 1:
